@@ -1,6 +1,7 @@
 FROM mumiehub/rclone-mount:latest
 
 ENV GOPATH="/go" \
+    RCLONE_VERSION="v1.49.1" \
     AccessFolder="/mnt" \
     RemotePath="drive:" \
     MountPoint="/mnt" \
@@ -10,11 +11,10 @@ ENV GOPATH="/go" \
     UnmountCommands="-u -z"
 
 ## Alpine with Go Git
-RUN apk add --no-cache --update alpine-sdk ca-certificates go git fuse fuse-dev \
-	&& go get -u -v github.com/ncw/rclone \
-	&& cp /go/bin/rclone /usr/sbin/ \
-	&& rm -rf /go \
-	&& apk del alpine-sdk go git \
+RUN apk add --no-cache --update alpine-sdk ca-certificates fuse fuse-dev wget \
+        && wget https://github.com/rclone/rclone/releases/download/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-linux-amd64.zip -O /tmp/rclone.zip \
+        && unzip -o -j /tmp/rclone.zip -d /usr/sbin \
+	&& apk del alpine-sdk wget \
 	&& rm -rf /tmp/* /var/cache/apk/* /var/lib/apk/lists/*
 
 ADD start.sh /start.sh
